@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root {
       --primary: #2e7d32;
@@ -134,22 +134,21 @@
       color: var(--text-light);
     }
     
-    /* Map Container Styles */
+    /* Map Container Styles - Fixed */
     #map-container {
       position: relative;
-      height: 250px;
+      height: 400px;
       width: 100%;
       border-radius: var(--radius);
       margin: 20px 0;
       overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.1);
     }
     
     #map {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
       height: 100%;
+      width: 100%;
+      transition: var(--transition);
     }
     
     .map-placeholder {
@@ -165,12 +164,6 @@
       background-color: rgba(0,0,0,0.05);
       color: var(--text-light);
       z-index: 1000;
-    }
-
-    #map-container, #map {
-      height: 100%;
-      width: 100%;
-      min-height: 250px;
     }
 
     header {
@@ -898,8 +891,8 @@ body::after {
         height: 80px;
       }
       
-      .map-container {
-        height: 250px;
+      #map-container {
+        height: 300px;
       }
 
       .welcome-cards {
@@ -1807,49 +1800,67 @@ scoreDescriptions: {
     }
 
     // =============================================
-    // MAP FUNCTIONALITY
+    // MAP FUNCTIONALITY - IMPROVED
     // =============================================
     function initMap() {
       const defaultCoords = [-41.0524, 145.9042]; // Default to Burnie, Tasmania
       
-      appState.map = L.map('map', {
-        zoomControl: false
-      }).setView(defaultCoords,10);
+      // Ensure container is visible
+      elements.mapContainer.style.display = 'block';
       
-      L.control.zoom({
-        position: 'topright'
-      }).addTo(appState.map);
+      // Destroy existing map if any
+      if (appState.map) {
+        appState.map.remove();
+        appState.map = null;
+      }
       
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-      }).addTo(appState.map);
-      
-      // Create custom green marker
-      const greenIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-      
-      // Create marker (initially hidden)
-      appState.marker = L.marker(defaultCoords, {
-        icon: greenIcon,
-        opacity: 0
-      }).addTo(appState.map);
-      
-      // Ensure map fills container
+      // Create new map with proper sizing
       setTimeout(() => {
-        appState.map.invalidateSize();
-      }, 0);
+        appState.map = L.map('map', {
+          zoomControl: false,
+          preferCanvas: true
+        }).setView(defaultCoords, 10);
+        
+        L.control.zoom({
+          position: 'topright'
+        }).addTo(appState.map);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19
+        }).addTo(appState.map);
+        
+        // Create custom green marker
+        const greenIcon = L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+        
+        // Create marker (initially hidden)
+        appState.marker = L.marker(defaultCoords, {
+          icon: greenIcon,
+          opacity: 0
+        }).addTo(appState.map);
+        
+        // Force resize and redraw
+        setTimeout(() => {
+          appState.map.invalidateSize(true);
+        }, 100);
+      }, 100);
       
-      // Handle window resizing
-      window.addEventListener('resize', () => {
-        appState.map.invalidateSize();
+      // More robust resize handler
+      const resizeObserver = new ResizeObserver(() => {
+        if (appState.map) {
+          setTimeout(() => {
+            appState.map.invalidateSize(true);
+          }, 100);
+        }
       });
+      resizeObserver.observe(elements.mapContainer);
     }
     
     function geocodeLocation(location) {
@@ -1873,6 +1884,11 @@ scoreDescriptions: {
               .setOpacity(1)
               .bindPopup(`<strong>Assessment Location</strong><br>${location}`)
               .openPopup();
+              
+            // Ensure map is properly sized
+            setTimeout(() => {
+              appState.map.invalidateSize(true);
+            }, 100);
           } else {
             elements.mapPlaceholder.classList.remove('hidden');
             console.error('Location not found');
