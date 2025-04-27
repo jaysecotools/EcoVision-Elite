@@ -852,6 +852,30 @@
       overflow-y: auto;
     }
     
+/* BACKGROUND THEME*/
+/* Base gradient */
+body {
+  background: linear-gradient(to bottom right, #f5fdf4, #e3f8e8);
+}
+
+/* Subtle pattern overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, #2e7d3221 1px, transparent 0);
+  background-size: 40px 40px;
+  z-index: -1;
+}
+
+/* Dark mode adjustment */
+[data-theme="dark"] body {
+  background: linear-gradient(to bottom right, #121e12, #0e1a10);
+}
+[data-theme="dark"] body::after {
+  background-image: radial-gradient(circle at 1px 1px, #4caf5021 1px, transparent 0);
+}
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -1790,7 +1814,7 @@ scoreDescriptions: {
       
       appState.map = L.map('map', {
         zoomControl: false
-      }).setView(defaultCoords, 10);
+      }).setView(defaultCoords,10);
       
       L.control.zoom({
         position: 'topright'
