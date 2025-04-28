@@ -853,6 +853,33 @@
       overflow-y: auto;
     }
     
+/* Add these to your existing CSS */
+.modal-body h3 {
+  color: var(--primary);
+  margin-top: 25px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--primary-light);
+}
+
+.modal-body ul, .modal-body ol {
+  margin-left: 20px;
+  margin-bottom: 15px;
+}
+
+.modal-body li {
+  margin-bottom: 8px;
+}
+
+.modal-body .recommendation {
+  margin: 15px 0;
+  background-color: rgba(46, 125, 50, 0.05);
+}
+
+.modal-body .small {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
 /* BACKGROUND THEME*/
 /* Base gradient */
 body {
@@ -3298,26 +3325,68 @@ function createTrendChart() {
     // =============================================
     document.addEventListener('DOMContentLoaded', initApp);
   </script>
-  <!-- User Guide Modal -->
+<!-- User Guide Modal -->
 <div id="user-guide-modal" class="modal hidden">
   <div class="modal-content">
     <span class="close-modal">&times;</span>
     <h2><i class="fas fa-book"></i> EcoVision Elite User Guide</h2>
     <div class="modal-body">
+      <h3>Comprehensive Ecosystem Assessment Tool</h3>
+      <p>EcoVision Elite provides a systematic approach to evaluating and monitoring ecosystem health through 15 key indicators. This guide will help you maximize the tool's potential.</p>
+      
       <h3>Getting Started</h3>
       <ol>
-        <li>Click "New Assessment" to begin</li>
-        <li>Name your assessment</li>
-        <li>Answer all 7 ecosystem questions</li>
-        <li>View your results and recommendations</li>
+        <li><strong>New Assessment:</strong> Begin by creating a new ecosystem evaluation</li>
+        <li><strong>Assessment Naming:</strong> Provide a descriptive name and location for future reference</li>
+        <li><strong>Questionnaire:</strong> Answer all 15 questions based on careful observation</li>
+        <li><strong>Documentation:</strong> Add photos and biodiversity survey data to enrich your assessment</li>
+        <li><strong>Results Analysis:</strong> Review your score, category breakdowns, and recommendations</li>
       </ol>
       
-      <h3>Understanding Scores</h3>
+      <h3>Assessment Methodology</h3>
+      <p>Our evaluation system examines five core ecosystem components:</p>
       <ul>
-        <li><strong>0-39 (Red):</strong> Needs improvement</li>
-        <li><strong>40-69 (Orange):</strong> Moderate health</li>
-        <li><strong>70-100 (Green):</strong> Healthy ecosystem</li>
+        <li><strong>Biodiversity:</strong> Native species diversity, keystone species, pollinator activity</li>
+        <li><strong>Soil & Water:</strong> Soil health, water quality, retention capacity</li>
+        <li><strong>Landscape Function:</strong> Canopy cover, habitat connectivity, disturbance regimes</li>
+        <li><strong>Climate Resilience:</strong> Carbon sequestration, adaptive capacity</li>
+        <li><strong>Cultural Value:</strong> Indigenous significance, traditional knowledge</li>
       </ul>
+      
+      <h3>Understanding Your Results</h3>
+      <div class="recommendation">
+        <i class="fas fa-thermometer-full"></i>
+        <div>
+          <h4>Score Interpretation</h4>
+          <p><strong>0-39 (Critical):</strong> Significant degradation detected. Immediate intervention recommended.</p>
+          <p><strong>40-69 (Moderate):</strong> Ecosystem functioning with some stress points. Targeted improvements suggested.</p>
+          <p><strong>70-100 (Healthy):</strong> Robust ecosystem. Focus on maintenance and monitoring.</p>
+        </div>
+      </div>
+      
+      <h3>Advanced Features</h3>
+      <ul>
+        <li><strong>Historical Tracking:</strong> Compare assessments over time to measure progress</li>
+        <li><strong>Geolocation:</strong> Pinpoint your assessment location on interactive maps</li>
+        <li><strong>Data Export:</strong> Save results as PDF or JSON for professional reporting</li>
+        <li><strong>Photo Documentation:</strong> Create visual records of ecosystem conditions</li>
+        <li><strong>Biodiversity Surveys:</strong> Track species observations and changes</li>
+      </ul>
+      
+      <h3>Best Practices</h3>
+      <div class="recommendation">
+        <i class="fas fa-clipboard-check"></i>
+        <div>
+          <h4>Assessment Tips</h4>
+          <p>1. Conduct assessments seasonally for comparable results</p>
+          <p>2. Take photos from consistent vantage points</p>
+          <p>3. Involve multiple observers for comprehensive evaluation</p>
+          <p>4. Reference previous assessments when answering questions</p>
+        </div>
+      </div>
+      
+      <h3>Need Help?</h3>
+      <p>For technical support or scientific consultation, contact our team at support@ecovisionelite.com</p>
     </div>
   </div>
 </div>
@@ -3326,13 +3395,52 @@ function createTrendChart() {
 <div id="terms-modal" class="modal hidden">
   <div class="modal-content">
     <span class="close-modal">&times;</span>
-    <h2><i class="fas fa-file-contract"></i> Terms of Use</h2>
+    <h2><i class="fas fa-file-contract"></i> Terms of Use & Privacy Policy</h2>
     <div class="modal-body">
-      <h3>1. Data Privacy</h3>
-      <p>All data is stored locally in your browser.</p>
+      <h3>1. Acceptance of Terms</h3>
+      <p>By using EcoVision Elite, you agree to these terms. If you disagree, please discontinue use immediately.</p>
       
-      <h3>2. Disclaimer</h3>
-      <p>Results are estimates only, not professional advice.</p>
+      <h3>2. Data Privacy & Security</h3>
+      <ul>
+        <li>All assessment data is stored locally in your browser (localStorage)</li>
+        <li>No personal or location data is collected or transmitted to our servers</li>
+        <li>Exported files contain only the data you explicitly choose to save</li>
+        <li>You are responsible for securing exported assessment files</li>
+      </ul>
+      
+      <h3>3. Intellectual Property</h3>
+      <ul>
+        <li>The assessment methodology is proprietary to EcoVision Elite</li>
+        <li>You retain full ownership of all data you create</li>
+        <li>Software code may not be reverse-engineered or repurposed</li>
+      </ul>
+      
+      <h3>4. Disclaimer of Warranties</h3>
+      <div class="recommendation">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+          <p>This tool provides general guidance only and does not constitute professional ecological advice. Always consult qualified experts for critical decisions.</p>
+          <p>We make no guarantees about the accuracy or completeness of assessment results.</p>
+        </div>
+      </div>
+      
+      <h3>5. Limitation of Liability</h3>
+      <p>EcoVision Elite and its developers shall not be liable for any direct, indirect, incidental, or consequential damages resulting from use of this tool.</p>
+      
+      <h3>6. Appropriate Use</h3>
+      <ul>
+        <li>Do not use for illegal purposes or to harm ecosystems</li>
+        <li>Commercial use requires written permission</li>
+        <li>Do not misrepresent assessment results</li>
+      </ul>
+      
+      <h3>7. Modifications</h3>
+      <p>We reserve the right to modify these terms at any time. Continued use constitutes acceptance of changes.</p>
+      
+      <h3>8. Governing Law</h3>
+      <p>These terms shall be governed by the laws of [Your Country/State] without regard to conflict of law principles.</p>
+      
+      <p class="small" style="margin-top: 20px;">Last updated: ${new Date().toLocaleDateString()}</p>
     </div>
   </div>
 </div>
