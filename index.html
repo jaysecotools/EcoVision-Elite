@@ -145,6 +145,14 @@
       border: 1px solid rgba(0,0,0,0.1);
     }
     
+#map {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  touch-action: manipulation; /* Improves touch responsiveness */
+}
+
     #map {
       height: 100%;
       width: 100%;
@@ -1799,107 +1807,164 @@ scoreDescriptions: {
       }
     }
 
-    // =============================================
-    // MAP FUNCTIONALITY - IMPROVED
-    // =============================================
-    function initMap() {
-      const defaultCoords = [-41.0524, 145.9042]; // Default to Burnie, Tasmania
-      
-      // Ensure container is visible
-      elements.mapContainer.style.display = 'block';
-      
-      // Destroy existing map if any
-      if (appState.map) {
-        appState.map.remove();
-        appState.map = null;
-      }
-      
-      // Create new map with proper sizing
+// =============================================
+// MAP FUNCTIONALITY - IMPROVED
+// =============================================
+function initMap() {
+  const defaultCoords = [-41.0524, 145.9042]; // Default to Burnie, Tasmania
+  
+  appState.map = L.map('map', {
+    zoomControl: false,
+    preferCanvas: true // Better for performance
+  }).setView(defaultCoords, 10);
+
+  // Make placeholder non-interactive (allows map interaction)
+  elements.mapPlaceholder.style.pointerEvents = 'none';
+  
+  L.control.zoom({
+    position: 'topright'
+  }).addTo(appState.map);
+  
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(appState.map);
+  
+  // Initialize marker as null (we'll create it on click)
+  appState.marker = null;
+
+  // Add click/long-press handler
+  let pressTimer;
+  const pressDelay = 500; // ms for long press detection
+
+  appState.map.on('mousedown', function(e) {
+    pressTimer = setTimeout(() => {
+      placeMarker(e.latlng);
+      elements.mapPlaceholder.classList.add('hidden');
+    }, pressDelay);
+  });
+
+  appState.map.on('mouseup', function() {
+    clearTimeout(pressTimer);
+  });
+
+  appState.map.on('click', function(e) {
+    // For desktop, place immediately on click
+    if (!isTouchDevice()) {
+      placeMarker(e.latlng);
+      elements.mapPlaceholder.classList.add('hidden');
+    }
+  });
+
+  // Helper function to detect touch devices
+  function isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints;
+  }
+
+  // Function to place/update marker
+  function placeMarker(latlng) {
+    // Remove existing marker
+    if (appState.marker) {
+      appState.map.removeLayer(appState.marker);
+    }
+
+    // Create new marker
+    const greenIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    appState.marker = L.marker(latlng, {
+      icon: greenIcon,
+      draggable: true // Allow manual adjustment
+    }).addTo(appState.map);
+
+    // Update location input field
+    reverseGeocode(latlng);
+
+    // Handle marker dragging
+    appState.marker.on('dragend', function() {
+      reverseGeocode(appState.marker.getLatLng());
+    });
+  }
+
+  // Function to get address from coordinates
+  function reverseGeocode(latlng) {
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`)
+      .then(response => response.json())
+      .then(data => {
+        const address = data.display_name || "Selected Location";
+        elements.locationInput.value = address;
+        if (appState.marker) {
+          appState.marker.bindPopup(`<b>Assessment Location</b><br>${address}`).openPopup();
+        }
+      })
+      .catch(() => {
+        elements.locationInput.value = `${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`;
+      });
+  }
+
+  // Ensure map fills container
+  setTimeout(() => {
+    appState.map.invalidateSize();
+  }, 100); // Slightly longer delay for better reliability
+
+  // Handle window resizing
+  const resizeObserver = new ResizeObserver(() => {
+    if (appState.map) {
       setTimeout(() => {
-        appState.map = L.map('map', {
-          zoomControl: false,
-          preferCanvas: true
-        }).setView(defaultCoords, 10);
+        appState.map.invalidateSize(true);
+      }, 100);
+    }
+  });
+  resizeObserver.observe(elements.mapContainer);
+}
+
+function geocodeLocation(location) {
+  if (!location) return;
+  
+  elements.mapPlaceholder.classList.add('hidden');
+  
+  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
         
-        L.control.zoom({
-          position: 'topright'
-        }).addTo(appState.map);
+        // Update map view
+        appState.map.setView([lat, lon], 14);
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 19
-        }).addTo(appState.map);
+        // Create or update marker
+        if (appState.marker) {
+          appState.marker.setLatLng([lat, lon]);
+        } else {
+          placeMarker([lat, lon]);
+        }
         
-        // Create custom green marker
-        const greenIcon = L.icon({
-          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
-        });
-        
-        // Create marker (initially hidden)
-        appState.marker = L.marker(defaultCoords, {
-          icon: greenIcon,
-          opacity: 0
-        }).addTo(appState.map);
-        
-        // Force resize and redraw
+        appState.marker
+          .setOpacity(1)
+          .bindPopup(`<strong>Assessment Location</strong><br>${location}`)
+          .openPopup();
+          
+        // Ensure map is properly sized
         setTimeout(() => {
           appState.map.invalidateSize(true);
         }, 100);
-      }, 100);
-      
-      // More robust resize handler
-      const resizeObserver = new ResizeObserver(() => {
-        if (appState.map) {
-          setTimeout(() => {
-            appState.map.invalidateSize(true);
-          }, 100);
-        }
-      });
-      resizeObserver.observe(elements.mapContainer);
-    }
-    
-    function geocodeLocation(location) {
-      if (!location) return;
-      
-      elements.mapPlaceholder.classList.add('hidden');
-      
-      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.length > 0) {
-            const lat = parseFloat(data[0].lat);
-            const lon = parseFloat(data[0].lon);
-            
-            // Update map view
-            appState.map.setView([lat, lon], 14);
-            
-            // Update marker
-            appState.marker
-              .setLatLng([lat, lon])
-              .setOpacity(1)
-              .bindPopup(`<strong>Assessment Location</strong><br>${location}`)
-              .openPopup();
-              
-            // Ensure map is properly sized
-            setTimeout(() => {
-              appState.map.invalidateSize(true);
-            }, 100);
-          } else {
-            elements.mapPlaceholder.classList.remove('hidden');
-            console.error('Location not found');
-          }
-        })
-        .catch(error => {
-          elements.mapPlaceholder.classList.remove('hidden');
-          console.error('Geocoding error:', error);
-        });
-    }
-
+      } else {
+        elements.mapPlaceholder.classList.remove('hidden');
+        console.error('Location not found');
+      }
+    })
+    .catch(error => {
+      elements.mapPlaceholder.classList.remove('hidden');
+      console.error('Geocoding error:', error);
+    });
+}
     // =============================================
     // ASSESSMENT QUESTIONS
     // =============================================
